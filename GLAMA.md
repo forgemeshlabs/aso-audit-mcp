@@ -24,6 +24,15 @@ CMD arguments:
 ["node", "dist/index.js"]
 ```
 
+In the Glama UI this must be entered as command arguments, not placeholder parameters. If the form shows editable rows, add exactly these two rows:
+
+```text
+node
+dist/index.js
+```
+
+Do not leave this field as `[]`; Glama requires at least one command argument even when the repository `Dockerfile` already has a `CMD`.
+
 Environment variables schema:
 
 ```json

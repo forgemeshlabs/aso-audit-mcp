@@ -142,6 +142,14 @@ Runtime command:
 node dist/index.js
 ```
 
+In Glama's **CMD arguments** field, enter:
+
+```json
+["node", "dist/index.js"]
+```
+
+Do not leave CMD arguments as `[]`; Glama validates that field separately from the Dockerfile `CMD`.
+
 ## The ASO framework
 
 > SEO ranks pages for people. ASO prepares services for agent selection, invocation, payment, and repeat use.
