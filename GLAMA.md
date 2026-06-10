@@ -1,0 +1,57 @@
+# Glama release build
+
+Use this repository's `Dockerfile` for the Glama Dockerfile admin page:
+
+```text
+https://glama.ai/mcp/servers/forgemeshlabs/aso-audit-mcp/admin/dockerfile
+```
+
+## Build spec
+
+If the admin page lets you use the repository Dockerfile directly, use the `Dockerfile` in this repo.
+
+If the admin page asks for build steps, use:
+
+```bash
+npm ci
+npm run build
+npm prune --omit=dev
+```
+
+CMD arguments:
+
+```json
+["node", "dist/index.js"]
+```
+
+Environment variables schema:
+
+```json
+{
+  "type": "object",
+  "properties": {},
+  "required": []
+}
+```
+
+Placeholder parameters:
+
+```json
+{}
+```
+
+## Runtime notes
+
+- Transport: `stdio`
+- Authentication: none for local/container stdio use
+- Network behavior: outbound `GET` requests only, against URLs provided to the MCP tools
+- No inbound HTTP port is required
+
+After Glama's build test succeeds, click **Make Release**, use version `0.1.3`, and publish the release.
+
+Local equivalent:
+
+```bash
+docker build -t aso-audit-mcp .
+docker run --rm -i aso-audit-mcp
+```

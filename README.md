@@ -123,10 +123,24 @@ List the ASO scanner checks.
 Release verification:
 
 - Git tag: `v0.1.3`
-- npm version: `@forgemeshlabs/aso-audit-mcp@0.1.3`
+- npm package: `@forgemeshlabs/aso-audit-mcp`
 - MCP server version: `0.1.3`
 
 `v0.1.3` is the Glama-ready release: the tagged source includes `glama.json`, npm installation metadata, usage examples, release verification, and local `stdio` authentication notes.
+
+### Glama release build
+
+Glama installability requires a **Glama release**, which is a containerized build created from the Glama Dockerfile admin page, not a GitHub release. This repo includes a production `Dockerfile` and [GLAMA.md](GLAMA.md) with the build spec values to use in Glama:
+
+```bash
+docker build -t aso-audit-mcp .
+```
+
+Runtime command:
+
+```bash
+node dist/index.js
+```
 
 ## The ASO framework
 
