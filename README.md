@@ -95,6 +95,37 @@ Try it: *"Scan example.com for agent readiness"* · *"What's my ASO score?"* · 
 npm run smoke -- https://your-site.com
 ```
 
+## Glama / registry metadata
+
+This repository includes `glama.json` for Glama MCP registry ownership and install metadata.
+
+- **Package:** `@forgemeshlabs/aso-audit-mcp`
+- **Current release:** `v0.1.2`
+- **Transport:** local `stdio`
+- **Authentication:** none required for local `stdio` use. The scanner does not ask for API keys, tokens, cookies, or third-party credentials.
+- **HTTP deployment:** not enabled by this npm package. Any public HTTP deployment of this scanner must add authentication, per-client rate limits, request logging, and an egress policy before exposure.
+
+Recommended Glama/MCP install command:
+
+```bash
+npx -y @forgemeshlabs/aso-audit-mcp
+```
+
+Example usage after connecting the server to an MCP client:
+
+```text
+Scan https://example.com for agent readiness.
+Give me the ASO fix plan for example.com.
+Check only the llms-txt signal for example.com.
+List the ASO scanner checks.
+```
+
+Release verification:
+
+- Git tag: `v0.1.2`
+- npm version: `@forgemeshlabs/aso-audit-mcp@0.1.2`
+- MCP server version: `0.1.2`
+
 ## The ASO framework
 
 > SEO ranks pages for people. ASO prepares services for agent selection, invocation, payment, and repeat use.

@@ -21,6 +21,7 @@
   "files": [
     "dist",
     "well-known",
+    "glama.json",
     "README.md"
   ],
   "scripts": {
