@@ -100,7 +100,7 @@ npm run smoke -- https://your-site.com
 This repository includes `glama.json` for Glama MCP registry ownership and install metadata.
 
 - **Package:** `@forgemeshlabs/aso-audit-mcp`
-- **Current release:** `v0.1.2`
+- **Current release:** `v0.1.3`
 - **Transport:** local `stdio`
 - **Authentication:** none required for local `stdio` use. The scanner does not ask for API keys, tokens, cookies, or third-party credentials.
 - **HTTP deployment:** not enabled by this npm package. Any public HTTP deployment of this scanner must add authentication, per-client rate limits, request logging, and an egress policy before exposure.
@@ -122,9 +122,11 @@ List the ASO scanner checks.
 
 Release verification:
 
-- Git tag: `v0.1.2`
-- npm version: `@forgemeshlabs/aso-audit-mcp@0.1.2`
-- MCP server version: `0.1.2`
+- Git tag: `v0.1.3`
+- npm version: `@forgemeshlabs/aso-audit-mcp@0.1.3`
+- MCP server version: `0.1.3`
+
+`v0.1.3` is the Glama-ready release: the tagged source includes `glama.json`, npm installation metadata, usage examples, release verification, and local `stdio` authentication notes.
 
 ## The ASO framework
 
