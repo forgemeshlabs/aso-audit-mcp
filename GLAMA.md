@@ -18,11 +18,7 @@ npm run build
 npm prune --omit=dev
 ```
 
-These must be configured in Glama's **Build steps** field. If they are missing, Glama will clone the repository and then immediately run `node dist/index.js`; because `dist/` is not checked into git, the build will fail with:
-
-```text
-Cannot find module '/app/dist/index.js'
-```
+These should be configured in Glama's **Build steps** field. The repository also checks in `dist/` so `node dist/index.js` can start even if Glama skips build steps while testing a release.
 
 CMD arguments:
 
