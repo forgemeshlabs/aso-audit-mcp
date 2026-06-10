@@ -1,5 +1,5 @@
 {
-  "name": "Agent-Ready Scanner",
+  "name": "ASO Scanner",
   "description": "Free open-source MCP server that scans websites for agent readiness and scores them on the Agent Readiness Index (ARI) using the ASO framework.",
   "url": "https://agentsignaloptimization.com",
   "version": "1.0.0",

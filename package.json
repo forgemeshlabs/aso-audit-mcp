@@ -1,10 +1,10 @@
 {
-  "name": "agent-ready-scanner-mcp",
+  "name": "@forgemesh/aso-mcp",
   "version": "1.0.0",
-  "description": "ASO (Agent Signal Optimization) scanner MCP server — checks websites for agent readiness across discoverability, identity, trust, commerce, reputation, and memory signals. Covers Cloudflare isitagentready.com checks plus Google A2A agent cards.",
+  "description": "ASO Scanner — the free Agent Readiness scanner as an MCP server. Measures your ASO Score (Agent Signal Optimization) across discovery, identity, trust, commerce, reputation, and memory signals. Includes Google A2A agent card and MCP server card validation.",
   "type": "module",
   "bin": {
-    "agent-ready-scanner-mcp": "dist/index.js"
+    "aso-mcp": "dist/index.js"
   },
   "main": "dist/index.js",
   "files": [

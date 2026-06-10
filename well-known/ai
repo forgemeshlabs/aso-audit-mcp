@@ -1,5 +1,5 @@
 {
-  "name": "Agent-Ready Scanner",
+  "name": "ASO Scanner",
   "framework": "ASO",
   "capabilities": [
     "discoverability.audit",

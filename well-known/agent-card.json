@@ -1,6 +1,6 @@
 {
   "protocolVersion": "0.3.0",
-  "name": "Agent-Ready Scanner",
+  "name": "ASO Scanner",
   "description": "Scans websites for agent readiness across discoverability, identity, trust, commerce, reputation, and memory signals. Returns an Agent Readiness Index (0-100) with per-check evidence and fix plans, per the ASO framework.",
   "url": "https://scanner.agentsignaloptimization.com/a2a",
   "preferredTransport": "JSONRPC",

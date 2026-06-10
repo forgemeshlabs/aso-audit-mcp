@@ -57,11 +57,15 @@ export interface PillarScore {
 }
 
 export interface ScanReport {
+  report: "Agent Readiness Report";
   url: string;
   scannedOrigin: string;
   framework: "ASO (Agent Signal Optimization)";
-  ariScore: number;
-  ariMax: 100;
+  /** The ASO Score, formally the Agent Readiness Index (0-100) */
+  asoScore: number;
+  asoMax: 100;
+  /** "Ready" at ASO-3 Invocable or higher (score >= 50 with a verified invocation path) */
+  agentReadiness: "Ready" | "Not ready";
   autoVerifiableMax: number;
   level: { id: string; name: string; range: string; meaning: string };
   certification: {

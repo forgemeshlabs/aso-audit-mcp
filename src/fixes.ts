@@ -152,7 +152,8 @@ Canonical: ${origin}/.well-known/security.txt
 
 export function buildFixPlan(report: ScanReport): {
   url: string;
-  ariScore: number;
+  asoScore: number;
+  agentReadiness: string;
   level: string;
   steps: { priority: number; check: string; gain: string; recommendation: string; template?: string }[];
 } {
@@ -165,10 +166,16 @@ export function buildFixPlan(report: ScanReport): {
     return {
       priority: i + 1,
       check: checkName,
-      gain: gainMatch ? `+${gainMatch[1]} ARI points` : "supporting",
+      gain: gainMatch ? `+${gainMatch[1]} ASO Score points` : "supporting",
       recommendation: gainMatch?.[3] ?? rec,
       template: check ? tpl[check.id] : undefined,
     };
   });
-  return { url: report.url, ariScore: report.ariScore, level: `${report.level.id} ${report.level.name}`, steps };
+  return {
+    url: report.url,
+    asoScore: report.asoScore,
+    agentReadiness: report.agentReadiness,
+    level: `${report.level.id} ${report.level.name}`,
+    steps,
+  };
 }

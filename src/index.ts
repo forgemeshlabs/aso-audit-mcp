@@ -17,7 +17,7 @@ const CATEGORIES = [
 ] as const;
 
 const server = new McpServer({
-  name: "agent-ready-scanner",
+  name: "aso-scanner",
   version: "1.0.0",
 });
 
@@ -35,15 +35,15 @@ function errorResult(err: unknown) {
 server.registerTool(
   "scan_site",
   {
-    title: "ASO agent-readiness scan",
+    title: "ASO Scan — measure your ASO Score",
     description:
-      "Scan a website for agent readiness using the ASO (Agent Signal Optimization) framework. " +
+      "Scan a website for Agent Readiness using the ASO (Agent Signal Optimization) framework and return an Agent Readiness Report. " +
       "Runs 33 checks across discoverability (robots.txt, sitemap, llms.txt, DNS-AID, Link headers), " +
       "content accessibility (markdown negotiation), bot access control (AI bot rules, Content Signals, Web Bot Auth), " +
       "invocation (API catalog, OAuth discovery, OAuth protected resource, auth.md, MCP Server Card, Google A2A Agent Card, Agent Skills, WebMCP), " +
       "commerce (x402, MPP, UCP, ACP, pricing) and identity/trust signals. " +
-      "Returns the Agent Readiness Index (ARI, 0-100), ASO maturity level (ASO-0 Invisible … ASO-5 Autonomous-Commerce-Ready), " +
-      "per-pillar scores, per-check evidence, and prioritized recommendations.",
+      "Returns the ASO Score (0-100, formally the Agent Readiness Index), ASO maturity level (ASO-0 Invisible … ASO-5 Autonomous-Commerce-Ready), " +
+      "an agent-readiness verdict, per-pillar scores, per-check evidence, and prioritized recommendations.",
     inputSchema: {
       url: z.string().describe("Website URL or domain to scan, e.g. https://example.com or example.com"),
       categories: z
@@ -98,7 +98,7 @@ server.registerTool(
   {
     title: "Get a prioritized ASO fix plan",
     description:
-      "Scan a site and return a prioritized remediation plan: which signals to add first, the ARI points each fix is worth, " +
+      "Scan a site and return a prioritized remediation plan: which signals to add first, the ASO Score points each fix is worth, " +
       "and ready-to-paste artifact templates (robots.txt AI rules, llms.txt, agent.json, A2A agent-card.json, MCP server card, x402 manifest, pricing.json, security.txt, status endpoint).",
     inputSchema: {
       url: z.string().describe("Website URL or domain to plan fixes for"),
@@ -151,4 +151,4 @@ server.registerTool(
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-console.error("agent-ready-scanner MCP server running on stdio");
+console.error("aso-mcp: ASO Scanner running on stdio");

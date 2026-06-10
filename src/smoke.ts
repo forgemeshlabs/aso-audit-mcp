@@ -7,8 +7,9 @@ import { scan } from "./scanner.js";
 const target = process.argv[2] ?? "https://agentsignaloptimization.com";
 const report = await scan(target);
 
-console.log(`\n=== ASO Scan: ${report.scannedOrigin} ===`);
-console.log(`ARI Score: ${report.ariScore}/100 (auto-verifiable max ${report.autoVerifiableMax})`);
+console.log(`\n=== Agent Readiness Report: ${report.scannedOrigin} ===`);
+console.log(`ASO Score: ${report.asoScore}/100 (auto-verifiable max ${report.autoVerifiableMax})`);
+console.log(`Agent Readiness: ${report.agentReadiness}`);
 console.log(`Level: ${report.level.id} ${report.level.name} — ${report.level.meaning}`);
 console.log(`Certification: ${report.certification.tier ?? "not yet eligible"}`);
 console.log(`\nPillars:`);

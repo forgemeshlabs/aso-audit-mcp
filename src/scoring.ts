@@ -109,16 +109,16 @@ export function score(url: string, origin: string, checks: CheckResult[]): ScanR
     };
   });
 
-  const ariScore = Math.round(pillars.reduce((a, p) => a + p.points, 0));
+  const asoScore = Math.round(pillars.reduce((a, p) => a + p.points, 0));
   const autoVerifiableMax = SIGNALS.filter((s) => !s.manual).reduce((a, s) => a + s.maxPoints, 0);
-  const level = ASO_LEVELS.find((l) => ariScore >= l.min && ariScore <= l.max) ?? ASO_LEVELS[0];
+  const level = ASO_LEVELS.find((l) => asoScore >= l.min && asoScore <= l.max) ?? ASO_LEVELS[0];
 
   // Certification per ASO-SCORE.md: begins at ASO-3, needs a verified invocation path.
   const invocable = ["openapi", "mcp-server-card", "a2a-agent-card"].some((id) => byId.get(id)?.status === "pass");
   let tier: string | null = null;
-  if (ariScore >= 90 && invocable) tier = "ASO Certified Autonomous-Commerce-Ready";
-  else if (ariScore >= 70 && invocable) tier = "ASO Certified Trustable";
-  else if (ariScore >= 50 && invocable) tier = "ASO Certified Invocable";
+  if (asoScore >= 90 && invocable) tier = "ASO Certified Autonomous-Commerce-Ready";
+  else if (asoScore >= 70 && invocable) tier = "ASO Certified Trustable";
+  else if (asoScore >= 50 && invocable) tier = "ASO Certified Invocable";
 
   const summary = { pass: 0, partial: 0, fail: 0, manual: 0, error: 0 };
   for (const c of checks) summary[c.status]++;
@@ -131,11 +131,13 @@ export function score(url: string, origin: string, checks: CheckResult[]): ScanR
     .map(({ c, impact }) => `[+${impact} pts] ${c.name}: ${c.recommendation}`);
 
   return {
+    report: "Agent Readiness Report",
     url,
     scannedOrigin: origin,
     framework: "ASO (Agent Signal Optimization)",
-    ariScore,
-    ariMax: 100,
+    asoScore,
+    asoMax: 100,
+    agentReadiness: asoScore >= 50 && invocable ? "Ready" : "Not ready",
     autoVerifiableMax,
     level: { id: level.id, name: level.name, range: `${level.min}-${level.max}`, meaning: level.meaning },
     certification: {
