@@ -1,0 +1,14 @@
+{
+  "name": "agent-ready-scanner",
+  "description": "ASO agent-readiness scanner. Tools: scan_site, check_signal, list_checks, get_fix_plan, get_aso_framework.",
+  "version": "1.0.0",
+  "endpoint": "https://scanner.agentsignaloptimization.com/mcp",
+  "transport": ["streamable-http", "stdio"],
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false
+  },
+  "documentation": "https://agentsignaloptimization.com",
+  "authentication": { "type": "none" }
+}
