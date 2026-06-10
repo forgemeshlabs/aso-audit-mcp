@@ -12,10 +12,16 @@ If the admin page lets you use the repository Dockerfile directly, use the `Dock
 
 If the admin page asks for build steps, use:
 
-```bash
+```text
 npm ci
 npm run build
 npm prune --omit=dev
+```
+
+These must be configured in Glama's **Build steps** field. If they are missing, Glama will clone the repository and then immediately run `node dist/index.js`; because `dist/` is not checked into git, the build will fail with:
+
+```text
+Cannot find module '/app/dist/index.js'
 ```
 
 CMD arguments:

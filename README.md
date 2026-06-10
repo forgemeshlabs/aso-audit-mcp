@@ -132,8 +132,12 @@ Release verification:
 
 Glama installability requires a **Glama release**, which is a containerized build created from the Glama Dockerfile admin page, not a GitHub release. This repo includes a production `Dockerfile` and [GLAMA.md](GLAMA.md) with the build spec values to use in Glama:
 
-```bash
-docker build -t aso-audit-mcp .
+Build steps:
+
+```text
+npm ci
+npm run build
+npm prune --omit=dev
 ```
 
 Runtime command:
