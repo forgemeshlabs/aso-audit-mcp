@@ -1,8 +1,19 @@
 {
-  "name": "@forgemesh/aso-mcp",
-  "version": "1.0.0",
+  "name": "@forgemeshlabs/aso-audit-mcp",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "ASO Scanner — the free Agent Readiness scanner as an MCP server. Measures your ASO Score (Agent Signal Optimization) across discovery, identity, trust, commerce, reputation, and memory signals. Includes Google A2A agent card and MCP server card validation.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forgemeshlabs/aso-audit-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/forgemeshlabs/aso-audit-mcp/issues"
+  },
+  "homepage": "https://github.com/forgemeshlabs/aso-audit-mcp#readme",
   "bin": {
     "aso-mcp": "dist/index.js"
   },
@@ -15,7 +26,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "smoke": "node dist/smoke.js"
+    "smoke": "node dist/smoke.js",
+    "test": "tsc -p tsconfig.test.json && node --test dist-test/*.test.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",

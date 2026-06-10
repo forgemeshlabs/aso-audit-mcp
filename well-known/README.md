@@ -1,8 +1,10 @@
 # Dogfooded ASO artifacts
 
-The scanner practices what it scans. When this MCP server is hosted (e.g. behind
-a Streamable HTTP endpoint), deploy these files so the deployment is itself
-fully ASO compliant:
+The scanner practices what it scans. When this MCP server is hosted, deploy
+these files so the deployment is itself fully ASO compliant. `stdio` is the
+safe default for local use; any public HTTP deployment must add authentication,
+per-client rate limiting, request logging, and an egress policy because the
+scanner makes outbound requests.
 
 | File | Serve at |
 |---|---|
@@ -14,3 +16,4 @@ fully ASO compliant:
 | `robots.txt` | `/robots.txt` |
 
 Update `url`/`endpoint` fields to the actual deployment origin before serving.
+Keep the MCP server card aligned with `package.json` and `src/index.ts`.

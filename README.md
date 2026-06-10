@@ -4,7 +4,9 @@
 
 SEO made you visible to search engines. **ASO (Agent Signal Optimization)** makes you discoverable, trustable, and payable by the AI agents that are becoming the web's next visitors.
 
-`aso-mcp` is the free, open-source **ASO Scanner** — an [MCP](https://modelcontextprotocol.io) server that scans any website and produces an **Agent Readiness Report** scored on the open [ASO framework](https://agentsignaloptimization.com).
+`aso-mcp` is the free, open-source **ASO Scanner** — an [MCP](https://modelcontextprotocol.io) server that scans any website and produces an **Agent Readiness Report** scored on the open [ASO framework](https://agentsignaloptimization.com). The beta npm package is `@forgemeshlabs/aso-audit-mcp`.
+
+> **Beta.** Experimental ASO scanner for evaluating whether agents can discover, trust, understand, and use a website/API/tool. ASO scoring is experimental and will evolve as agent standards mature.
 
 ```
 === Agent Readiness Report: https://example.com ===
@@ -35,16 +37,18 @@ Every check returns **pass / partial / fail** with concrete evidence and a fix r
 
 Requires Node.js ≥ 18.
 
+Package metadata is currently aligned for the beta publish as `@forgemeshlabs/aso-audit-mcp@0.1.0`; the CLI binary remains `aso-mcp`.
+
 ```bash
-git clone https://github.com/forgemesh/aso-mcp
-cd aso-mcp
+git clone https://github.com/forgemeshlabs/aso-audit-mcp
+cd aso-audit-mcp
 npm install && npm run build
 ```
 
 ### Claude Code
 
 ```bash
-claude mcp add aso -- node /path/to/aso-mcp/dist/index.js
+claude mcp add aso -- node /path/to/aso-audit-mcp/dist/index.js
 ```
 
 ### Claude Desktop / Cursor / Windsurf (any MCP client)
@@ -54,7 +58,7 @@ claude mcp add aso -- node /path/to/aso-mcp/dist/index.js
   "mcpServers": {
     "aso": {
       "command": "node",
-      "args": ["/path/to/aso-mcp/dist/index.js"]
+      "args": ["/path/to/aso-audit-mcp/dist/index.js"]
     }
   }
 }
@@ -93,9 +97,19 @@ npm run smoke -- https://your-site.com
 
 Scores from this scanner are directional self-assessments. **ASO Certification** (ASO-3+) requires verified evidence — see the [scoring rubric](https://agentsignaloptimization.com/docs/ASO-SCORE.md) and [agentsignaloptimization.com](https://agentsignaloptimization.com) for audits, certification, and the full framework.
 
-## Notes
+## Security
 
-- The scanner only performs `GET` requests with an `ASO-Scanner/1.0` user agent, max 6 concurrent, 10s timeout, 512KB body cap. It never authenticates, never POSTs, never crawls beyond well-known paths.
+This scanner makes outbound requests to URLs you give it, so it is built to resist SSRF abuse:
+
+- **Scheme allow-list** — only `http`/`https`; `file:`, `ftp:`, `gopher:`, `data:` etc. are rejected.
+- **Private-target blocking** — after DNS resolution, requests to loopback, private (RFC 1918), link-local, CGNAT, reserved, multicast, and the cloud metadata address (`169.254.169.254`) are refused. IPv6 loopback/ULA/link-local and IPv4-mapped forms are covered too. If a hostname resolves to *any* private address, the scan is refused.
+- **Pinned-IP transport** — each request dials the exact public IP that was validated, while TLS still verifies the original hostname. This closes the validate-then-connect DNS rebinding window.
+- **Manual redirect validation** — automatic redirect following is disabled; every hop is re-validated against the same rules, capped at 5 redirects. A public URL that 30x-redirects to an internal address cannot slip through.
+- **Untrusted remote content** — parsed manifests are omitted from tool output by default (`include_artifacts: true` to opt in, and they are then explicitly labeled untrusted); embedded text excerpts are control-char-sanitized and length-capped. Treat any returned remote content as data, never instructions.
+- **Bounded** — `GET` only, `ASO-Scanner/1.0` UA, max 6 concurrent, 10s timeout, 512KB body cap. Never authenticates, never POSTs, never crawls beyond well-known paths.
+- **Tested hardening** — `npm test` covers unsafe URL rejection, private IP ranges, artifact sanitization, redirect blocking, redirect hop caps, and the test-only loopback escape hatch.
+
+**Deployment:** `stdio` (local, per-user) is the safe default. A public **HTTP** deployment is a network-egress tool and **must** add authentication, per-client rate limiting, request logging, and an egress policy before exposure.
 - Reputation signals (citations, reviews, success rates) cannot be auto-verified by a crawler; they are reported as `manual` and scored 0 until verified by audit — so the auto-verifiable maximum is 89/100. That is intentional honesty, not a bug.
 - Emerging specs (MCP Server Cards SEP-1649/SEP-2127, DNS-AID, Web Bot Auth, UCP/ACP/MPP) move fast. PRs updating paths welcome.
 

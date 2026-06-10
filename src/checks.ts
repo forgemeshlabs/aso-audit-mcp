@@ -1,5 +1,5 @@
 import { resolveTxt } from "node:dns/promises";
-import { ScanContext, looksHtml, tryJson, type HttpResult } from "./http.js";
+import { ScanContext, looksHtml, tryJson, sanitizeArtifact, type HttpResult } from "./http.js";
 import type { CheckDef, CheckResult, CloudflareCategory } from "./types.js";
 
 /** AI crawler user-agents that Cloudflare-style scanners look for in robots.txt */
@@ -193,7 +193,7 @@ const llmsTxt: Checker = async (ctx) => {
   if (r.status === 200 && !looksHtml(r) && r.body.trim().length > 0) {
     const full = await ctx.get("/llms-full.txt");
     const hasFull = full.status === 200 && !looksHtml(full);
-    return result(D["llms-txt"], "pass", `/llms.txt published (${r.body.length} bytes)${hasFull ? ", llms-full.txt also present" : ""}`, undefined, r.body.slice(0, 4000));
+    return result(D["llms-txt"], "pass", `/llms.txt published (${r.body.length} bytes)${hasFull ? ", llms-full.txt also present" : ""}`, undefined, sanitizeArtifact(r.body, 2000));
   }
   return result(D["llms-txt"], "fail", `/llms.txt: ${describe(r)}`, "Publish /llms.txt: a markdown overview of what you do, key links, docs, and pricing — the agent-facing front door.");
 };
