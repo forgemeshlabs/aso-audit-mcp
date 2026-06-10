@@ -35,20 +35,22 @@ Every check returns **pass / partial / fail** with concrete evidence and a fix r
 
 ## Install
 
-Requires Node.js ≥ 18.
-
-Package metadata is currently aligned for the beta publish as `@forgemeshlabs/aso-audit-mcp@0.1.0`; the CLI binary remains `aso-mcp`.
+Requires Node.js ≥ 18. Published on npm as [`@forgemeshlabs/aso-audit-mcp`](https://www.npmjs.com/package/@forgemeshlabs/aso-audit-mcp) — no clone or build needed.
 
 ```bash
-git clone https://github.com/forgemeshlabs/aso-audit-mcp
-cd aso-audit-mcp
-npm install && npm run build
+npm install -g @forgemeshlabs/aso-audit-mcp
+```
+
+Or skip the install entirely and run it with `npx` (recommended for MCP clients):
+
+```bash
+npx -y @forgemeshlabs/aso-audit-mcp
 ```
 
 ### Claude Code
 
 ```bash
-claude mcp add aso -- node /path/to/aso-audit-mcp/dist/index.js
+claude mcp add aso -- npx -y @forgemeshlabs/aso-audit-mcp
 ```
 
 ### Claude Desktop / Cursor / Windsurf (any MCP client)
@@ -57,11 +59,22 @@ claude mcp add aso -- node /path/to/aso-audit-mcp/dist/index.js
 {
   "mcpServers": {
     "aso": {
-      "command": "node",
-      "args": ["/path/to/aso-audit-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "@forgemeshlabs/aso-audit-mcp"]
     }
   }
 }
+```
+
+### Development (from source)
+
+Only needed if you're hacking on the scanner itself:
+
+```bash
+git clone https://github.com/forgemeshlabs/aso-audit-mcp
+cd aso-audit-mcp
+npm install && npm run build
+claude mcp add aso -- node /path/to/aso-audit-mcp/dist/index.js
 ```
 
 ## Tools
@@ -76,7 +89,7 @@ claude mcp add aso -- node /path/to/aso-audit-mcp/dist/index.js
 
 Try it: *"Scan example.com for agent readiness"* · *"What's my ASO score?"* · *"Give me a fix plan to make my site agent-ready."*
 
-### CLI smoke test
+### CLI smoke test (from a source checkout)
 
 ```bash
 npm run smoke -- https://your-site.com
