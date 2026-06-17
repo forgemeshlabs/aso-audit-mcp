@@ -102,6 +102,7 @@ export const CHECK_DEFS: CheckDef[] = [
   def("versioning", "Versioning & return paths", "Identity & Trust (ASO)", "Version fields in manifests, changelog, or versioned docs"),
   def("identity-consistency", "Identity consistency", "Identity & Trust (ASO)", "Service name/identity consistent across published manifests"),
   def("signal-consistency", "Signal consistency", "Identity & Trust (ASO)", "Core signals present and not contradictory (e.g. robots.txt vs llms.txt)"),
+  def("agent-friendly-ux", "Agent-friendly UX", "Identity & Trust (ASO)", "Homepage exposes semantic, stable interaction signals for browser agents", "https://web.dev/articles/ai-agent-site-ux"),
 ];
 
 const D = Object.fromEntries(CHECK_DEFS.map((d) => [d.id, d])) as Record<string, CheckDef>;
@@ -367,6 +368,52 @@ const jsonLd: Checker = async (ctx) => {
   return result(D["json-ld"], "fail", "No structured data on homepage", "Add schema.org JSON-LD describing your organization, offers, and services.");
 };
 
+const agentFriendlyUx: Checker = async (ctx) => {
+  const home = await ctx.home();
+  if (home.status !== 200 || looksHtml(home) === false && home.body.trim().length === 0) {
+    return result(D["agent-friendly-ux"], "fail", `Homepage unavailable for UX scan: ${describe(home)}`, "Ensure the primary page is crawlable and renders meaningful HTML for browser agents.");
+  }
+
+  const body = home.body;
+  const semanticActions = (body.match(/<(button|a|input|select|textarea)\b/gi) ?? []).length;
+  const divButtons = (body.match(/<div\b[^>]*\brole=["']button["']/gi) ?? []).length;
+  const unlabeledInputs = (body.match(/<(input|select|textarea)\b/gi) ?? []).length;
+  const linkedLabels = (body.match(/<label\b[^>]*\bfor=["'][^"']+["']/gi) ?? []).length;
+  const ghostRisk = /\bopacity\s*:\s*0\b|\bdisplay\s*:\s*none\b|\bvisibility\s*:\s*hidden\b|pointer-events\s*:\s*none/i.test(body);
+  const hasAria = /\baria-label=|\baria-labelledby=|\brole=/i.test(body);
+  const hasCursorPointer = /cursor\s*:\s*pointer/i.test(body);
+
+  const strengths: string[] = [];
+  const gaps: string[] = [];
+  if (semanticActions > 0) strengths.push(`${semanticActions} semantic interactive element(s)`);
+  else gaps.push("no semantic button/link/input elements found");
+  if (linkedLabels > 0 || unlabeledInputs === 0) strengths.push(linkedLabels > 0 ? `${linkedLabels} label(s) linked with for=` : "no form controls needing labels detected");
+  else gaps.push("form controls found without linked labels");
+  if (hasAria || semanticActions > 0) strengths.push("ARIA/semantic action signals present");
+  else gaps.push("no ARIA/role fallback signals");
+  if (hasCursorPointer) strengths.push("cursor:pointer action cues present");
+  if (divButtons > 0) gaps.push(`${divButtons} div role=button fallback(s); prefer native button/a where possible`);
+  if (ghostRisk) gaps.push("hidden/transparent/overlay styling patterns detected");
+
+  if (semanticActions > 0 && gaps.length === 0) {
+    return result(D["agent-friendly-ux"], "pass", `Agent-friendly homepage signals: ${strengths.join("; ")}`);
+  }
+  if (semanticActions > 0 || hasAria || linkedLabels > 0) {
+    return result(
+      D["agent-friendly-ux"],
+      "partial",
+      `Some agent-friendly signals found (${strengths.join("; ") || "limited"}), gaps: ${gaps.join("; ")}`,
+      "Follow Google's agent-friendly website guidance: prefer semantic button/a/input elements, connect labels with for=, keep layouts stable, and avoid ghost overlays."
+    );
+  }
+  return result(
+    D["agent-friendly-ux"],
+    "fail",
+    `No strong browser-agent UX signals. Gaps: ${gaps.join("; ")}`,
+    "Use semantic HTML for actions, label form controls, expose meaningful roles/names/states, and keep critical UI stable for screenshot, DOM, and accessibility-tree agents."
+  );
+};
+
 const openapi: Checker = async (ctx) => {
   const hit = await ctx.firstHit(["/openapi.json", "/.well-known/openapi.json", "/openapi.yaml", "/openapi.yml", "/swagger.json", "/api/openapi.json"]);
   if (hit) {
@@ -487,6 +534,7 @@ const INDEPENDENT: [string, Checker][] = [
   ["pricing", pricing],
   ["https-enforced", httpsEnforced],
   ["json-ld", jsonLd],
+  ["agent-friendly-ux", agentFriendlyUx],
   ["openapi", openapi],
   ["agent-json", agentJson],
   ["security-txt", securityTxt],

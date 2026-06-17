@@ -43,7 +43,7 @@ export const SIGNALS: SignalDef[] = [
   // Trust — 15
   { id: "https", name: "HTTPS enforced", pillar: "Trust", maxPoints: 4, sources: ["https-enforced"] },
   { id: "auth-docs", name: "Auth clearly documented", pillar: "Trust", maxPoints: 4, sources: ["auth-md", "oauth-as", "oauth-pr"] },
-  { id: "governance", name: "Governance or provenance signals", pillar: "Trust", maxPoints: 4, sources: ["security-txt", "content-signals", "web-bot-auth"] },
+  { id: "governance", name: "Governance or provenance signals", pillar: "Trust", maxPoints: 4, sources: ["security-txt", "content-signals", "web-bot-auth", "agent-friendly-ux"] },
   { id: "status", name: "Operational status visibility", pillar: "Trust", maxPoints: 3, sources: ["status-endpoint"] },
   // Commerce — 15
   { id: "pricing", name: "Machine-readable pricing", pillar: "Commerce", maxPoints: 5, sources: ["pricing"] },

@@ -6,6 +6,8 @@ SEO made you visible to search engines. **ASO (Agent Signal Optimization)** make
 
 `aso-mcp` is the free, open-source **ASO Scanner** — an [MCP](https://modelcontextprotocol.io) server that scans any website and produces an **Agent Readiness Report** scored on the open [ASO framework](https://agentsignaloptimization.com). The beta npm package is `@forgemeshlabs/aso-audit-mcp`.
 
+This release tracks Google's current agent-readiness guidance without overstating it: Google Search says traditional SEO fundamentals still apply to generative AI search, `llms.txt` is ignored by Google Search itself, and browser agents benefit from clean DOM, screenshot, and accessibility-tree signals. The scanner keeps `llms.txt` because non-Google agents use it, and adds a browser-agent UX check for semantic controls, linked labels, ARIA/role fallbacks, and hidden-overlay risk.
+
 > **Beta.** Experimental ASO scanner for evaluating whether agents can discover, trust, understand, and use a website/API/tool. ASO scoring is experimental and will evolve as agent standards mature.
 
 ```
@@ -18,7 +20,7 @@ Discoverability  20/20    Identity  15/20    Trust   11/15
 Commerce          5/15    Reputation 4/15    Memory  15/15
 ```
 
-## What it checks — 33 signals across 6 pillars
+## What it checks — 34 signals across 6 pillars
 
 Find gaps in **discovery, trust, interoperability, and commerce** — every emerging agent standard in one scan:
 
@@ -29,7 +31,7 @@ Find gaps in **discovery, trust, interoperability, and commerce** — every emer
 | **Bot Access** | Explicit AI crawler rules (GPTBot, ClaudeBot, Google-Extended, PerplexityBot…), Content Signals, Web Bot Auth |
 | **Interoperability** | API Catalog (RFC 9727), OAuth discovery (RFC 8414), OAuth Protected Resource (RFC 9728), auth.md, **MCP Server Card** (`/.well-known/mcp/server-card.json`), **Google A2A Agent Card** (`/.well-known/agent-card.json`, required fields validated), Agent Skills, WebMCP |
 | **Commerce** | x402, MPP, UCP, ACP, machine-readable pricing |
-| **Identity & Trust** | HTTPS enforcement, JSON-LD/schema.org, OpenAPI, agent.json, security.txt, status endpoint, versioning, cross-file identity & signal consistency |
+| **Identity & Trust** | HTTPS enforcement, JSON-LD/schema.org, agent-friendly browser UX, OpenAPI, agent.json, security.txt, status endpoint, versioning, cross-file identity & signal consistency |
 
 Every check returns **pass / partial / fail** with concrete evidence and a fix recommendation. Results roll up into the six ASO pillars (Discoverability 20, Identity 20, Trust 15, Commerce 15, Reputation 15, Memory 15) → your **ASO Score** and maturity level.
 
@@ -81,7 +83,7 @@ claude mcp add aso -- node /path/to/aso-audit-mcp/dist/index.js
 
 | Tool | What it does |
 |---|---|
-| `scan_site` | Full ASO scan → Agent Readiness Report: ASO Score, level, pillar breakdown, all 33 checks with evidence + recommendations |
+| `scan_site` | Full ASO scan → Agent Readiness Report: ASO Score, level, pillar breakdown, all 34 checks with evidence + recommendations |
 | `get_fix_plan` | Prioritized remediation plan with ready-to-paste templates (robots.txt AI rules, llms.txt, agent.json, A2A agent card, MCP server card, x402 manifest, pricing.json, security.txt, status endpoint) |
 | `check_signal` | Run one specific check (e.g. `a2a-agent-card`, `llms-txt`, `x402`) |
 | `list_checks` | Catalog of every check with spec links |
@@ -100,7 +102,7 @@ npm run smoke -- https://your-site.com
 This repository includes `glama.json` for Glama MCP registry ownership and install metadata.
 
 - **Package:** `@forgemeshlabs/aso-audit-mcp`
-- **Current release:** `v0.1.3`
+- **Current release:** `v0.1.4`
 - **Transport:** local `stdio`
 - **Authentication:** none required for local `stdio` use. The scanner does not ask for API keys, tokens, cookies, or third-party credentials.
 - **HTTP deployment:** not enabled by this npm package. Any public HTTP deployment of this scanner must add authentication, per-client rate limits, request logging, and an egress policy before exposure.
@@ -122,11 +124,11 @@ List the ASO scanner checks.
 
 Release verification:
 
-- Git tag: `v0.1.3`
+- Git tag: `v0.1.4`
 - npm package: `@forgemeshlabs/aso-audit-mcp`
-- MCP server version: `0.1.3`
+- MCP server version: `0.1.4`
 
-`v0.1.3` is the Glama-ready release: the tagged source includes `glama.json`, npm installation metadata, usage examples, release verification, and local `stdio` authentication notes.
+`v0.1.4` is the Google agent-readiness alignment release: it adds the agent-friendly UX check, clarifies Google Search's generative AI guidance, and keeps Glama metadata ready.
 
 ### Glama release build
 
@@ -184,6 +186,21 @@ This scanner makes outbound requests to URLs you give it, so it is built to resi
 **Deployment:** `stdio` (local, per-user) is the safe default. A public **HTTP** deployment is a network-egress tool and **must** add authentication, per-client rate limiting, request logging, and an egress policy before exposure.
 - Reputation signals (citations, reviews, success rates) cannot be auto-verified by a crawler; they are reported as `manual` and scored 0 until verified by audit — so the auto-verifiable maximum is 89/100. That is intentional honesty, not a bug.
 - Emerging specs (MCP Server Cards SEP-1649/SEP-2127, DNS-AID, Web Bot Auth, UCP/ACP/MPP) move fast. PRs updating paths welcome.
+
+## Source alignment
+
+This package intentionally separates Google Search guidance from broader ASO guidance:
+
+- Google Search generative AI features still rely on core Search ranking and quality systems; foundational SEO, crawlability, helpful content, and technical clarity remain the priority.
+- Google Search does not use `llms.txt` or special AI markdown files for ranking or AI Overviews/AI Mode visibility. ASO still checks them because other agents and MCP clients can use them.
+- Google/web.dev's agent-friendly site guidance focuses on browser-agent usability: stable layouts, semantic HTML, labels tied to inputs, meaningful roles/names/states, and avoiding hidden overlays.
+- UCP, AP2, A2A, MCP, x402, DNS-AID, Content Signals, and Web Bot Auth are emerging non-SEO protocols. The scanner treats them as agent-readiness signals, not as Google Search ranking factors.
+
+Primary references:
+
+- https://developers.google.com/search/docs/fundamentals/ai-optimization-guide
+- https://web.dev/articles/ai-agent-site-ux
+- https://ucp.dev
 
 ## License
 

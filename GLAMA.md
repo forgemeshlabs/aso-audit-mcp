@@ -58,7 +58,7 @@ Placeholder parameters:
 - Network behavior: outbound `GET` requests only, against URLs provided to the MCP tools
 - No inbound HTTP port is required
 
-After Glama's build test succeeds, click **Make Release**, use version `0.1.3`, and publish the release.
+After Glama's build test succeeds, click **Make Release**, use the current package version, and publish the release.
 
 Local equivalent:
 

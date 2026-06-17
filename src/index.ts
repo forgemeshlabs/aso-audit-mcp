@@ -31,7 +31,7 @@ const urlSchema = z
 
 const server = new McpServer({
   name: "aso-scanner",
-  version: "0.1.3", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
+  version: "0.1.4", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
 });
 
 function json(payload: unknown) {
@@ -72,10 +72,10 @@ server.registerTool(
     title: "ASO Scan — measure your ASO Score",
     description:
       "Scan a website for Agent Readiness using the ASO (Agent Signal Optimization) framework and return an Agent Readiness Report. " +
-      "Runs 33 checks across discoverability (robots.txt, sitemap, llms.txt, DNS-AID, Link headers), " +
+      "Runs 34 checks across discoverability (robots.txt, sitemap, llms.txt, DNS-AID, Link headers), " +
       "content accessibility (markdown negotiation), bot access control (AI bot rules, Content Signals, Web Bot Auth), " +
       "invocation (API catalog, OAuth discovery, OAuth protected resource, auth.md, MCP Server Card, Google A2A Agent Card, Agent Skills, WebMCP), " +
-      "commerce (x402, MPP, UCP, ACP, pricing) and identity/trust signals. " +
+      "commerce (x402, MPP, UCP, ACP, pricing), Google generative AI search basics, browser-agent UX, and identity/trust signals. " +
       "Returns the ASO Score (0-100, formally the Agent Readiness Index), ASO maturity level (ASO-0 Invisible … ASO-5 Autonomous-Commerce-Ready), " +
       "an agent-readiness verdict, per-pillar scores, per-check evidence, and prioritized recommendations.",
     inputSchema: {
