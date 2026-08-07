@@ -34,7 +34,7 @@ export const SIGNALS = [
     // Commerce — 15
     { id: "pricing", name: "Machine-readable pricing", pillar: "Commerce", maxPoints: 5, sources: ["pricing"] },
     { id: "payment-manifest", name: "x402 or payment manifest", pillar: "Commerce", maxPoints: 5, sources: ["x402", "mpp"] },
-    { id: "purchase-path", name: "Agent-safe purchase path", pillar: "Commerce", maxPoints: 5, sources: ["ucp", "acp"] },
+    { id: "purchase-path", name: "Agent-safe purchase path", pillar: "Commerce", maxPoints: 5, sources: ["x402", "mpp", "ucp", "acp"] },
     // Reputation (emerging) — 15
     { id: "uptime-metrics", name: "Uptime and latency metrics", pillar: "Reputation", maxPoints: 4, sources: ["status-endpoint"] },
     { id: "success-rates", name: "Success or completion rates", pillar: "Reputation", maxPoints: 4, sources: [], manual: true },

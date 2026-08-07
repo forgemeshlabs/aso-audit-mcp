@@ -59,7 +59,11 @@ Sitemap: ${origin}/sitemap.xml
   "protocolVersion": "0.3.0",
   "name": "${siteName}",
   "description": "What this agent/service does and the tasks it accepts.",
-  "url": "${origin}/a2a",
+  "supportedInterfaces": [{
+    "url": "${origin}/a2a",
+    "protocolBinding": "HTTP+JSON",
+    "protocolVersion": "1.0"
+  }],
   "preferredTransport": "JSONRPC",
   "version": "1.0.0",
   "capabilities": {

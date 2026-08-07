@@ -1,5 +1,5 @@
-import { request as httpRequest } from "node:http";
-import { request as httpsRequest } from "node:https";
+import { request as nodeHttpRequest } from "node:http";
+import { request as nodeHttpsRequest } from "node:https";
 import { gunzipSync, inflateSync, brotliDecompressSync } from "node:zlib";
 import { assertResolvableAndPublic, parseScanUrl, UnsafeUrlError, MAX_REDIRECTS, } from "./safeurl.js";
 const USER_AGENT = "ASO-Scanner/1.0 (Agent Signal Optimization; +https://agentsignaloptimization.com)";
@@ -12,7 +12,7 @@ const MAX_BODY = 512 * 1024;
  * custom `lookup` here closes it. TLS still verifies the certificate against
  * the original hostname. Redirects are never followed at this layer.
  */
-function pinnedGet(url, pin, accept) {
+function pinnedRequest(url, pin, options) {
     const lookup = (_host, options, cb) => {
         if (options.all) {
             cb(null, [{ address: pin.ip, family: pin.family }]);
@@ -22,13 +22,14 @@ function pinnedGet(url, pin, accept) {
         }
     };
     return new Promise((resolve, reject) => {
-        const request = url.protocol === "https:" ? httpsRequest : httpRequest;
+        const request = url.protocol === "https:" ? nodeHttpsRequest : nodeHttpRequest;
         const req = request(url, {
-            method: "GET",
+            method: options.method,
             headers: {
                 "User-Agent": USER_AGENT,
-                Accept: accept,
+                Accept: options.accept,
                 "Accept-Encoding": "identity",
+                ...options.headers,
             },
             lookup,
         }, (res) => {
@@ -59,7 +60,7 @@ function pinnedGet(url, pin, accept) {
             clearTimeout(deadline);
             reject(err);
         });
-        req.end();
+        req.end(options.body);
     });
 }
 /**
@@ -89,7 +90,7 @@ function decodeBody(raw, headers) {
  * pinning each connection to the validated IP so a DNS answer cannot change
  * between validation and connect (rebinding TOCTOU).
  */
-export async function httpGet(url, opts = {}) {
+export async function httpRequest(url, opts = {}) {
     let current;
     try {
         current = parseScanUrl(url).toString();
@@ -107,7 +108,12 @@ export async function httpGet(url, opts = {}) {
         }
         let res;
         try {
-            res = await pinnedGet(new URL(current), pin, opts.accept ?? "*/*");
+            res = await pinnedRequest(new URL(current), pin, {
+                accept: opts.accept ?? "*/*",
+                method: (opts.method ?? "GET").toUpperCase(),
+                body: opts.body,
+                headers: opts.headers,
+            });
         }
         catch (err) {
             return {
@@ -134,6 +140,9 @@ export async function httpGet(url, opts = {}) {
         return toResult(res, current);
     }
     return { ok: false, status: 0, headers: {}, body: "", finalUrl: current, contentType: "", error: "Redirect loop" };
+}
+export function httpGet(url, opts = {}) {
+    return httpRequest(url, opts);
 }
 function blockedResult(url, err) {
     return {

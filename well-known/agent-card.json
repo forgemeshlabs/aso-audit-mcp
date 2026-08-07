@@ -1,9 +1,13 @@
 {
-  "protocolVersion": "0.3.0",
   "name": "ASO Scanner",
   "description": "Scans websites for agent readiness across discoverability, identity, trust, commerce, reputation, and memory signals. Returns an Agent Readiness Index (0-100) with per-check evidence and fix plans, per the ASO framework.",
-  "url": "https://scanner.agentsignaloptimization.com/a2a",
-  "preferredTransport": "JSONRPC",
+  "supportedInterfaces": [
+    {
+      "url": "https://scanner.agentsignaloptimization.com/a2a",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    }
+  ],
   "provider": {
     "organization": "Agent Signal Optimization",
     "url": "https://agentsignaloptimization.com"
@@ -30,6 +34,13 @@
       "description": "Produce a prioritized remediation plan with ready-to-paste artifact templates (robots.txt AI rules, llms.txt, agent.json, A2A agent card, MCP server card, x402 manifest).",
       "tags": ["aso", "remediation", "templates"],
       "examples": ["Give me a fix plan to make example.com agent-ready"]
+    },
+    {
+      "id": "audit-x402-endpoint",
+      "name": "x402 v2 endpoint compliance audit",
+      "description": "Run a deterministic no-spend audit of one x402 paid endpoint and return a score, grade, per-check verdicts, and observed protocol metadata.",
+      "tags": ["x402", "payments", "compliance", "audit"],
+      "examples": ["Audit https://example.com/paid for x402 v2 compliance"]
     }
   ]
 }

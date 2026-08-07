@@ -33,6 +33,31 @@ Find gaps in **discovery, trust, interoperability, and commerce** — every emer
 | **Commerce** | x402, MPP, UCP, ACP, machine-readable pricing |
 | **Identity & Trust** | HTTPS enforcement, JSON-LD/schema.org, agent-friendly browser UX, OpenAPI, agent.json, security.txt, status endpoint, versioning, cross-file identity & signal consistency |
 
+## Deterministic x402 v2 endpoint audit
+
+The MCP tool `audit_x402_endpoint` complements the origin-wide ASO scan with a
+no-spend protocol audit of one paid endpoint. It returns a 0-100 score, A-F
+grade, compliance verdict, per-check booleans, failed checks, and observed
+schemes/networks/extensions. It validates the live 402 challenge but never
+sends `PAYMENT-SIGNATURE`, so it cannot authorize or settle a payment.
+
+Checks: HTTPS/TLS, HTTP 402, `PAYMENT-REQUIRED`, Base64 JSON, `x402Version: 2`,
+non-empty `accepts`, CAIP-2 networks, required payment fields, and JSON content
+type. For body-gated routes, pass `method`, `body`, and optionally
+`content_type`.
+
+This is deliberately reported separately from the ASO Score: protocol
+compliance does not prove discoverability, trust, settlement, idempotency, or
+paid-response quality.
+
+## Living standards model
+
+Agent protocols are changing quickly. The scanner is maintained as part of a
+living framework: checks are versioned, and stable standards, optional
+capabilities, release candidates, drafts, and vendor conventions are labeled
+separately. See the dated [scanner source list](SOURCES.md) and the canonical
+[ASO source registry](https://agentsignaloptimization.com/SOURCES.md).
+
 Every check returns **pass / partial / fail** with concrete evidence and a fix recommendation. Results roll up into the six ASO pillars (Discoverability 20, Identity 20, Trust 15, Commerce 15, Reputation 15, Memory 15) → your **ASO Score** and maturity level.
 
 ## Install
@@ -102,7 +127,7 @@ npm run smoke -- https://your-site.com
 This repository includes `glama.json` for Glama MCP registry ownership and install metadata.
 
 - **Package:** `@forgemeshlabs/aso-audit-mcp`
-- **Current release:** `v0.1.4`
+- **Current release:** `v0.2.0`
 - **Transport:** local `stdio`
 - **Authentication:** none required for local `stdio` use. The scanner does not ask for API keys, tokens, cookies, or third-party credentials.
 - **HTTP deployment:** not enabled by this npm package. Any public HTTP deployment of this scanner must add authentication, per-client rate limits, request logging, and an egress policy before exposure.
@@ -124,11 +149,11 @@ List the ASO scanner checks.
 
 Release verification:
 
-- Git tag: `v0.1.4`
+- Git tag: `v0.2.0`
 - npm package: `@forgemeshlabs/aso-audit-mcp`
-- MCP server version: `0.1.4`
+- MCP server version: `0.2.0`
 
-`v0.1.4` is the Google agent-readiness alignment release: it adds the agent-friendly UX check, clarifies Google Search's generative AI guidance, and keeps Glama metadata ready.
+`v0.2.0` adds the deterministic no-spend x402 v2 endpoint compliance audit while preserving the broader ASO Agent Readiness score as a separate metric.
 
 ### Glama release build
 

@@ -5,6 +5,7 @@
   "version": "1.0.0",
   "capabilities": [
     "scan_site",
+    "audit_x402_endpoint",
     "check_signal",
     "list_checks",
     "get_fix_plan",

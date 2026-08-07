@@ -6,6 +6,7 @@ import { scan, scanSingle, CHECK_DEFS } from "./scanner.js";
 import { ASO_LEVELS, SIGNALS } from "./scoring.js";
 import { buildFixPlan } from "./fixes.js";
 import { UnsafeUrlError } from "./safeurl.js";
+import { auditX402Endpoint } from "./x402-audit.js";
 import type { CloudflareCategory, ScanReport } from "./types.js";
 
 const CATEGORIES = [
@@ -31,7 +32,7 @@ const urlSchema = z
 
 const server = new McpServer({
   name: "aso-scanner",
-  version: "0.1.4", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
+  version: "0.2.0", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
 });
 
 function json(payload: unknown) {
@@ -65,6 +66,29 @@ function projectReport(report: ScanReport, includeArtifacts: boolean): ScanRepor
   }
   return { ...report, checks: report.checks.map(({ data, ...rest }) => rest) };
 }
+
+server.registerTool(
+  "audit_x402_endpoint",
+  {
+    title: "Deterministic x402 v2 endpoint audit",
+    description:
+      "Run a no-spend protocol audit against one paid endpoint. Returns a deterministic 0-100 score, A-F grade, compliance verdict, per-check booleans, failed checks, and observed schemes/networks/extensions. " +
+      "Validates HTTPS, HTTP 402, PAYMENT-REQUIRED, Base64 JSON, x402Version 2, accepts[], CAIP-2 networks, required payment fields, and JSON content type. Never sends PAYMENT-SIGNATURE and cannot spend funds.",
+    inputSchema: {
+      url: urlSchema.describe("Exact paid endpoint URL to challenge"),
+      method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]).optional().describe("HTTP method; defaults to GET"),
+      body: z.string().max(65536).optional().describe("Optional request body required to reach payment middleware on POST/PUT/PATCH endpoints"),
+      content_type: z.string().max(128).optional().describe("Body content type; defaults to application/json"),
+    },
+  },
+  async ({ url, method, body, content_type }) => {
+    try {
+      return json(await auditX402Endpoint(url, method, body, content_type));
+    } catch (err) {
+      return errorResult(err);
+    }
+  }
+);
 
 server.registerTool(
   "scan_site",

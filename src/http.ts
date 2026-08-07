@@ -1,5 +1,5 @@
-import { request as httpRequest, type IncomingMessage } from "node:http";
-import { request as httpsRequest } from "node:https";
+import { request as nodeHttpRequest, type IncomingMessage } from "node:http";
+import { request as nodeHttpsRequest } from "node:https";
 import type { LookupFunction } from "node:net";
 import { gunzipSync, inflateSync, brotliDecompressSync } from "node:zlib";
 import {
@@ -40,7 +40,11 @@ interface RawResponse {
  * custom `lookup` here closes it. TLS still verifies the certificate against
  * the original hostname. Redirects are never followed at this layer.
  */
-function pinnedGet(url: URL, pin: ResolvedSafeUrl, accept: string): Promise<RawResponse> {
+function pinnedRequest(
+  url: URL,
+  pin: ResolvedSafeUrl,
+  options: { accept: string; method: string; body?: string; headers?: Record<string, string> },
+): Promise<RawResponse> {
   const lookup: LookupFunction = (_host, options, cb) => {
     if (options.all) {
       (cb as unknown as (err: null, addrs: { address: string; family: number }[]) => void)(
@@ -52,15 +56,16 @@ function pinnedGet(url: URL, pin: ResolvedSafeUrl, accept: string): Promise<RawR
   };
 
   return new Promise((resolve, reject) => {
-    const request = url.protocol === "https:" ? httpsRequest : httpRequest;
+    const request = url.protocol === "https:" ? nodeHttpsRequest : nodeHttpRequest;
     const req = request(
       url,
       {
-        method: "GET",
+        method: options.method,
         headers: {
           "User-Agent": USER_AGENT,
-          Accept: accept,
+          Accept: options.accept,
           "Accept-Encoding": "identity",
+          ...options.headers,
         },
         lookup,
       },
@@ -94,7 +99,7 @@ function pinnedGet(url: URL, pin: ResolvedSafeUrl, accept: string): Promise<RawR
       clearTimeout(deadline);
       reject(err);
     });
-    req.end();
+    req.end(options.body);
   });
 }
 
@@ -122,9 +127,9 @@ function decodeBody(raw: Buffer, headers: Record<string, string>): string {
  * pinning each connection to the validated IP so a DNS answer cannot change
  * between validation and connect (rebinding TOCTOU).
  */
-export async function httpGet(
+export async function httpRequest(
   url: string,
-  opts: { accept?: string } = {}
+  opts: { accept?: string; method?: string; body?: string; headers?: Record<string, string> } = {}
 ): Promise<HttpResult> {
   let current: string;
   try {
@@ -143,7 +148,12 @@ export async function httpGet(
 
     let res: RawResponse;
     try {
-      res = await pinnedGet(new URL(current), pin, opts.accept ?? "*/*");
+      res = await pinnedRequest(new URL(current), pin, {
+        accept: opts.accept ?? "*/*",
+        method: (opts.method ?? "GET").toUpperCase(),
+        body: opts.body,
+        headers: opts.headers,
+      });
     } catch (err) {
       return {
         ok: false, status: 0, headers: {}, body: "", finalUrl: current, contentType: "",
@@ -169,6 +179,10 @@ export async function httpGet(
     return toResult(res, current);
   }
   return { ok: false, status: 0, headers: {}, body: "", finalUrl: current, contentType: "", error: "Redirect loop" };
+}
+
+export function httpGet(url: string, opts: { accept?: string } = {}): Promise<HttpResult> {
+  return httpRequest(url, opts);
 }
 
 function blockedResult(url: string, err: unknown): HttpResult {

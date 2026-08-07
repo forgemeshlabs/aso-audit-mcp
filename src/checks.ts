@@ -212,6 +212,11 @@ const llmDocs: Checker = async (ctx) => {
 };
 
 const contentSignals: Checker = async (ctx) => {
+  const home = await ctx.home();
+  const header = home.headers["content-signal"];
+  if (header) {
+    return result(D["content-signals"], "pass", `Content-Signal response header: ${header.slice(0, 200)}`);
+  }
   const r = await ctx.robots();
   if (/content-signal\s*:/i.test(r.body)) {
     const lines = r.body.split(/\r?\n/).filter((l) => /content-signal/i.test(l));
@@ -262,13 +267,22 @@ const authMd: Checker = async (ctx) => {
   return result(D["auth-md"], "fail", "No /auth.md or /.well-known/auth.md", "Publish auth.md describing how agents authenticate: token acquisition, scopes, and example requests.");
 };
 
-const A2A_REQUIRED = ["name", "description", "url", "version", "capabilities", "skills", "defaultInputModes", "defaultOutputModes"];
+const A2A_REQUIRED = ["name", "description", "supportedInterfaces", "version", "capabilities", "skills", "defaultInputModes", "defaultOutputModes"];
 
 const a2aAgentCard: Checker = async (ctx) => {
   const r = await ctx.get("/.well-known/agent-card.json");
   const json = tryJson(r.body) as Record<string, unknown> | null;
   if (r.status === 200 && json) {
     const missing = A2A_REQUIRED.filter((f) => !(f in json));
+    const interfaces = Array.isArray(json.supportedInterfaces) ? json.supportedInterfaces : [];
+    if ("supportedInterfaces" in json && (
+      interfaces.length === 0
+      || interfaces.some((item) => {
+        if (!item || typeof item !== "object" || Array.isArray(item)) return true;
+        const i = item as Record<string, unknown>;
+        return typeof i.url !== "string" || typeof i.protocolBinding !== "string" || typeof i.protocolVersion !== "string";
+      })
+    )) missing.push("supportedInterfaces[].{url,protocolBinding,protocolVersion}");
     if (missing.length === 0) {
       const skills = Array.isArray(json.skills) ? json.skills.length : 0;
       return result(D["a2a-agent-card"], "pass", `Valid A2A Agent Card: "${json.name}" v${json.version}, ${skills} skill(s)`, undefined, json);
@@ -280,7 +294,7 @@ const a2aAgentCard: Checker = async (ctx) => {
   if (legacy.status === 200 && lj && ("skills" in lj || "capabilities" in lj)) {
     return result(D["a2a-agent-card"], "partial", "Legacy /.well-known/agent.json found (pre-0.3 A2A path)", "Move/duplicate your Agent Card to /.well-known/agent-card.json — the current A2A discovery path.", lj);
   }
-  return result(D["a2a-agent-card"], "fail", `/.well-known/agent-card.json: ${describe(r)}`, "Publish an A2A Agent Card at /.well-known/agent-card.json (name, description, url, version, capabilities, skills, defaultInputModes, defaultOutputModes).");
+  return result(D["a2a-agent-card"], "fail", `/.well-known/agent-card.json: ${describe(r)}`, "If this service implements A2A, publish an Agent Card at /.well-known/agent-card.json with name, description, supportedInterfaces, version, capabilities, skills, defaultInputModes, and defaultOutputModes.");
 };
 
 const mcpServerCard: Checker = async (ctx) => {
@@ -338,6 +352,14 @@ const acp: Checker = async (ctx) => {
 const pricing: Checker = async (ctx) => {
   const hit = await ctx.firstHit(["/.well-known/pricing.json", "/pricing.json", "/.well-known/payments"]);
   if (hit && tryJson(hit.res.body)) return result(D["pricing"], "pass", `Machine-readable pricing at ${hit.path}`);
+  const x402Manifest = await ctx.firstHit(["/.well-known/x402", "/.well-known/x402.json"]);
+  if (x402Manifest) {
+    const manifest = tryJson(x402Manifest.res.body);
+    const serialized = manifest === null ? "" : JSON.stringify(manifest);
+    if (/"(?:price|amount)"\s*:/.test(serialized)) {
+      return result(D["pricing"], "pass", `Machine-readable pricing in ${x402Manifest.path}`);
+    }
+  }
   const llms = await ctx.get("/llms.txt");
   if (llms.status === 200 && /pricing|price/i.test(llms.body)) {
     return result(D["pricing"], "partial", "Pricing referenced in llms.txt but no machine-readable pricing file", "Publish pricing as JSON (e.g. /pricing.json or an x402 manifest) so agents can compare costs without scraping.");
@@ -418,8 +440,19 @@ const openapi: Checker = async (ctx) => {
   const hit = await ctx.firstHit(["/openapi.json", "/.well-known/openapi.json", "/openapi.yaml", "/openapi.yml", "/swagger.json", "/api/openapi.json"]);
   if (hit) {
     const j = tryJson(hit.res.body) as Record<string, unknown> | null;
-    if ((j && (j.openapi || j.swagger)) || /^openapi\s*:/m.test(hit.res.body)) {
-      return result(D["openapi"], "pass", `OpenAPI spec at ${hit.path}`, undefined, j ?? undefined);
+    if (j && (j.openapi || j.swagger)) {
+      const info = j.info && typeof j.info === "object" ? j.info as Record<string, unknown> : null;
+      const paths = j.paths && typeof j.paths === "object" && !Array.isArray(j.paths) ? j.paths as Record<string, unknown> : null;
+      const missing = [
+        !info || typeof info.title !== "string" ? "info.title" : null,
+        !info || typeof info.version !== "string" ? "info.version" : null,
+        !paths || Object.keys(paths).length === 0 ? "non-empty paths" : null,
+      ].filter((v): v is string => v !== null);
+      if (missing.length === 0) return result(D["openapi"], "pass", `OpenAPI spec at ${hit.path} with ${Object.keys(paths!).length} path(s)`, undefined, j);
+      return result(D["openapi"], "partial", `OpenAPI document at ${hit.path} is incomplete: missing ${missing.join(", ")}`, `Add ${missing.join(", ")} so agents have a usable invocation contract.`, j);
+    }
+    if (/^openapi\s*:/m.test(hit.res.body)) {
+      return result(D["openapi"], "partial", `YAML OpenAPI document at ${hit.path}; structural validation unavailable`, "Also publish JSON OpenAPI for deterministic machine validation by this scanner.");
     }
   }
   return result(D["openapi"], "fail", "No OpenAPI spec at common paths", "Publish an OpenAPI spec (and reference it from api-catalog / agent.json) — the canonical invocation contract.");

@@ -6,6 +6,7 @@
     "identity.manifest.review",
     "trust.signal.validation",
     "commerce.readiness.scan",
+    "x402.v2.endpoint.audit",
     "a2a.agent-card.validation",
     "mcp.server-card.validation"
   ],
