@@ -71,6 +71,12 @@ server.registerTool(
   "audit_x402_endpoint",
   {
     title: "Deterministic x402 v2 endpoint audit",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     description:
       "Run a no-spend protocol audit against one paid endpoint. Returns a deterministic 0-100 score, A-F grade, compliance verdict, per-check booleans, failed checks, and observed schemes/networks/extensions. " +
       "Validates HTTPS, HTTP 402, PAYMENT-REQUIRED, Base64 JSON, x402Version 2, accepts[], CAIP-2 networks, required payment fields, and JSON content type. Never sends PAYMENT-SIGNATURE and cannot spend funds.",
@@ -94,6 +100,12 @@ server.registerTool(
   "scan_site",
   {
     title: "ASO Scan — measure your ASO Score",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     description:
       "Scan a website for Agent Readiness using the ASO (Agent Signal Optimization) framework and return an Agent Readiness Report. " +
       "Runs 34 checks across discoverability (robots.txt, sitemap, llms.txt, DNS-AID, Link headers), " +
@@ -128,6 +140,12 @@ server.registerTool(
   "check_signal",
   {
     title: "Run a single agent-readiness check",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     description:
       "Run one specific agent-readiness check against a site (e.g. 'a2a-agent-card', 'llms-txt', 'mcp-server-card', 'x402'). " +
       "Use list_checks for valid check ids. Returns status, evidence, and a fix recommendation.",
@@ -156,6 +174,12 @@ server.registerTool(
   "list_checks",
   {
     title: "List all agent-readiness checks",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     description:
       "List the full catalog of checks the scanner runs: id, name, category (Cloudflare isitagentready-style), description, and spec link.",
     inputSchema: {},
@@ -167,6 +191,12 @@ server.registerTool(
   "get_fix_plan",
   {
     title: "Get a prioritized ASO fix plan",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     description:
       "Scan a site and return a prioritized remediation plan: which signals to add first, the ASO Score points each fix is worth, " +
       "and ready-to-paste artifact templates (robots.txt AI rules, llms.txt, agent.json, A2A agent-card.json, MCP server card, x402 manifest, pricing.json, security.txt, status endpoint).",
@@ -188,6 +218,12 @@ server.registerTool(
   "get_aso_framework",
   {
     title: "ASO framework reference",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     description:
       "Return the ASO (Agent Signal Optimization) framework reference: the six signal pillars with point weights, " +
       "the Agent Readiness Index maturity levels (ASO-0 through ASO-5), certification thresholds, and the scoring rubric. " +
