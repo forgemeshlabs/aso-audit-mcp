@@ -1,5 +1,7 @@
 # aso-mcp — the free Agent Readiness Scanner
 
+[![M8ven Verified](https://m8ven.ai/badge/mcp/forgemeshlabs-aso-audit-mcp-1af1t6?variant=verified)](https://m8ven.ai/mcp/forgemeshlabs-aso-audit-mcp-1af1t6)
+
 **What's your ASO score?**
 
 SEO made you visible to search engines. **ASO (Agent Signal Optimization)** makes you discoverable, trustable, and payable by the AI agents that are becoming the web's next visitors.
