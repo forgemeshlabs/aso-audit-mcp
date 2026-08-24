@@ -1,7 +1,7 @@
 import { httpRequest } from "./http.js";
 import { assertResolvableAndPublic, parseScanUrl } from "./safeurl.js";
 
-export const X402_AUDIT_VERSION = "forgemesh-x402-audit/1.0";
+export const X402_AUDIT_VERSION = "forgemesh-x402-audit/1.1";
 
 const CHECK_WEIGHTS = {
   HTTPS_TLS_AUTHORIZED: 10,
@@ -132,6 +132,18 @@ export async function auditX402Endpoint(
   if (response.finalUrl !== initial.toString()) warnings.push(`Request redirected to ${response.finalUrl}`);
   if (accepts.some((p) => p && typeof p === "object" && !["exact", "upto", "batch-settlement"].includes(String((p as Record<string, unknown>).scheme)))) {
     warnings.push("Challenge advertises a scheme outside the currently documented exact/upto/batch-settlement set; verify its scheme specification independently.");
+  }
+  // Field finding (Aug 2026): the Bazaar indexer silently drops any listing whose
+  // description exceeds exactly 500 characters — no error surfaced anywhere; the
+  // resource just becomes unpurchasable through discovery. Measured at the boundary.
+  const descriptions = accepts
+    .map((p) => p && typeof p === "object" ? (p as Record<string, unknown>).description : undefined);
+  const overLimit = descriptions.filter((d) => typeof d === "string" && d.length > 500).length;
+  if (overLimit > 0) {
+    warnings.push(`${overLimit} accepts[].description exceed 500 characters — Bazaar-indexed listings past exactly 500 chars become silently unpurchasable; trim them.`);
+  }
+  if (accepts.length > 0 && descriptions.every((d) => typeof d !== "string" || d.length === 0)) {
+    warnings.push("No accepts[].description present — discovery indexes rank listings on how well descriptions match agent task language; empty descriptions are effectively invisible in search.");
   }
 
   return {
