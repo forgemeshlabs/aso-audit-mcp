@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.forgemeshlabs/aso-audit-mcp",
+  "description": "ASO Scanner \u2014 the free Agent Readiness scanner as an MCP server. Measures your ASO Score (Agent.",
+  "repository": {
+    "url": "https://github.com/forgemeshlabs/aso-audit-mcp",
+    "source": "github"
+  },
+  "version": "0.4.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@forgemeshlabs/aso-audit-mcp",
+      "version": "0.4.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
