@@ -538,7 +538,10 @@ const identityConsistency = async (ctx: ScanContext, prior: CheckResult[]): Prom
   const names: { source: string; name: string }[] = [];
   for (const c of prior) {
     const d = c.data as Record<string, unknown> | undefined;
-    if (d && typeof d.name === "string") names.push({ source: c.id, name: d.name });
+    if (!d) continue;
+    // MCP server cards: `name` is a registry identifier (e.g. "io.github.org/aso"); the human-facing name is `title`.
+    const display = c.id === "mcp-server-card" && typeof d.title === "string" && d.title.trim() ? d.title : d.name;
+    if (typeof display === "string" && display.trim()) names.push({ source: c.id, name: display.trim() });
   }
   const llms = prior.find((c) => c.id === "llms-txt");
   if (llms?.status === "pass" && typeof llms.data === "string") {
@@ -548,9 +551,17 @@ const identityConsistency = async (ctx: ScanContext, prior: CheckResult[]): Prom
   if (names.length === 0) return result(D["identity-consistency"], "fail", "No named manifests published to compare", "Publish agent.json / Agent Card / llms.txt with a consistent service name.");
   if (names.length === 1) return result(D["identity-consistency"], "partial", `Only one named source (${names[0].source}: "${names[0].name}")`, "Publish your identity in at least two signal files (e.g. agent.json + llms.txt) with the same name.");
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const base = norm(names[0].name);
-  const consistent = names.every((n) => norm(n.name).includes(base) || base.includes(norm(n.name)));
-  if (consistent) return result(D["identity-consistency"], "pass", `Consistent identity across ${names.length} sources: "${names[0].name}"`);
+  // Anchor on the longest published name; accept substrings and the anchor's acronym ("Agent Signal Optimization" ⇄ "ASO Scanner").
+  const anchor = [...names].sort((a, b) => b.name.length - a.name.length)[0];
+  const base = norm(anchor.name);
+  const acronym = anchor.name.split(/[\s\-_/]+/).filter(Boolean).map((w) => w[0]).join("").toLowerCase();
+  const matches = (n: string) => {
+    const x = norm(n);
+    if (x.includes(base) || base.includes(x)) return true;
+    return acronym.length >= 3 && new RegExp(`(^|[^a-z0-9])${acronym}([^a-z0-9]|$)`, "i").test(n);
+  };
+  const consistent = names.every((n) => matches(n.name));
+  if (consistent) return result(D["identity-consistency"], "pass", `Consistent identity across ${names.length} sources: "${anchor.name}"`);
   return result(D["identity-consistency"], "fail", `Conflicting names: ${names.map((n) => `${n.source}="${n.name}"`).join(", ")}`, "Align the service name across all manifests — agents treat conflicting identity as a trust failure.");
 };
 
