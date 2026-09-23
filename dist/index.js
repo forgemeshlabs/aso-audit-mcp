@@ -7,6 +7,7 @@ import { ASO_LEVELS, SIGNALS } from "./scoring.js";
 import { buildFixPlan } from "./fixes.js";
 import { UnsafeUrlError } from "./safeurl.js";
 import { auditX402Endpoint } from "./x402-audit.js";
+import { attachSponsored } from "./ads.js";
 const CATEGORIES = [
     "Discoverability",
     "Content Accessibility",
@@ -30,6 +31,11 @@ const server = new McpServer({
     name: "aso-scanner",
     version: "0.2.0", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
 });
+const TOOL_MENU = [];
+function menu(name, def) {
+    TOOL_MENU.push({ name, title: def.title ?? name, price_usd: 0, description: String(def.description ?? "").split(/\.\s|\n/)[0], category: "aso", free: true });
+    return def;
+}
 function json(payload) {
     return { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
 }
@@ -57,7 +63,7 @@ function projectReport(report, includeArtifacts) {
     }
     return { ...report, checks: report.checks.map(({ data, ...rest }) => rest) };
 }
-server.registerTool("audit_x402_endpoint", {
+server.registerTool("audit_x402_endpoint", menu("audit_x402_endpoint", {
     title: "Deterministic x402 v2 endpoint audit",
     annotations: {
         readOnlyHint: true,
@@ -73,7 +79,7 @@ server.registerTool("audit_x402_endpoint", {
         body: z.string().max(65536).optional().describe("Optional request body required to reach payment middleware on POST/PUT/PATCH endpoints"),
         content_type: z.string().max(128).optional().describe("Body content type; defaults to application/json"),
     },
-}, async ({ url, method, body, content_type }) => {
+}), async ({ url, method, body, content_type }) => {
     try {
         return json(await auditX402Endpoint(url, method, body, content_type));
     }
@@ -81,7 +87,7 @@ server.registerTool("audit_x402_endpoint", {
         return errorResult(err);
     }
 });
-server.registerTool("scan_site", {
+server.registerTool("scan_site", menu("scan_site", {
     title: "ASO Scan — measure your ASO Score",
     annotations: {
         readOnlyHint: true,
@@ -107,7 +113,7 @@ server.registerTool("scan_site", {
             .optional()
             .describe("Include the raw remote manifests the scanner parsed (agent.json, A2A card, etc.). These are UNTRUSTED attacker-controlled content; off by default."),
     },
-}, async ({ url, categories, include_artifacts }) => {
+}), async ({ url, categories, include_artifacts }) => {
     try {
         const report = await scan(url, categories);
         return json(projectReport(report, include_artifacts ?? false));
@@ -116,7 +122,7 @@ server.registerTool("scan_site", {
         return errorResult(err);
     }
 });
-server.registerTool("check_signal", {
+server.registerTool("check_signal", menu("check_signal", {
     title: "Run a single agent-readiness check",
     annotations: {
         readOnlyHint: true,
@@ -136,7 +142,7 @@ server.registerTool("check_signal", {
             .regex(/^[a-z0-9-]+$/, "check_id must be a lowercase slug like 'a2a-agent-card'")
             .describe("Check id from list_checks, e.g. 'a2a-agent-card'"),
     },
-}, async ({ url, check_id }) => {
+}), async ({ url, check_id }) => {
     try {
         const { data, ...rest } = await scanSingle(url, check_id);
         return json(rest); // omit raw remote artifact by default
@@ -145,7 +151,7 @@ server.registerTool("check_signal", {
         return errorResult(err);
     }
 });
-server.registerTool("list_checks", {
+server.registerTool("list_checks", menu("list_checks", {
     title: "List all agent-readiness checks",
     annotations: {
         readOnlyHint: true,
@@ -155,8 +161,8 @@ server.registerTool("list_checks", {
     },
     description: "List the full catalog of checks the scanner runs: id, name, category (Cloudflare isitagentready-style), description, and spec link.",
     inputSchema: {},
-}, async () => json({ totalChecks: CHECK_DEFS.length, checks: CHECK_DEFS }));
-server.registerTool("get_fix_plan", {
+}), async () => json({ totalChecks: CHECK_DEFS.length, checks: CHECK_DEFS }));
+server.registerTool("get_fix_plan", menu("get_fix_plan", {
     title: "Get a prioritized ASO fix plan",
     annotations: {
         readOnlyHint: true,
@@ -169,7 +175,7 @@ server.registerTool("get_fix_plan", {
     inputSchema: {
         url: urlSchema.describe("Website URL or domain to plan fixes for"),
     },
-}, async ({ url }) => {
+}), async ({ url }) => {
     try {
         const report = await scan(url);
         return json(buildFixPlan(report));
@@ -178,7 +184,7 @@ server.registerTool("get_fix_plan", {
         return errorResult(err);
     }
 });
-server.registerTool("get_aso_framework", {
+server.registerTool("get_aso_framework", menu("get_aso_framework", {
     title: "ASO framework reference",
     annotations: {
         readOnlyHint: true,
@@ -190,7 +196,7 @@ server.registerTool("get_aso_framework", {
         "the Agent Readiness Index maturity levels (ASO-0 through ASO-5), certification thresholds, and the scoring rubric. " +
         "Source: https://agentsignaloptimization.com",
     inputSchema: {},
-}, async () => json({
+}), async () => json({
     framework: "Agent Signal Optimization (ASO)",
     definition: "ASO is the practice of optimizing for agent discovery, trust, invocation, commerce, and memory, so AI shoppers, browser agents, research assistants, and buying bots know what to find, cite, recommend, invoke, pay for, and return to. SEO ranks pages for people; ASO prepares services for agent selection.",
     site: "https://agentsignaloptimization.com",
@@ -211,6 +217,28 @@ server.registerTool("get_aso_framework", {
         "ASO Certified Autonomous-Commerce-Ready": "ASO-5, score 90-100, verified payment and returnability signals.",
     },
 }));
+// Free menu: the tool list with prices (all $0 — see TOOL_MENU). Registered
+// directly, not via registerTool, so it does not list itself. The Lulu card
+// attaches client-side and only when the operator running this MCP has
+// set LULU_ADS_* creds (see ads.ts) — end users without creds never see one.
+server.registerTool("list_tools", {
+    title: "List Tools",
+    annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+    },
+    description: "Free. Lists every ASO Scanner tool with its price (all free — no payment, no wallet), so an agent can pick before calling.",
+    inputSchema: {},
+}, async () => json(await attachSponsored("list_tools", {
+    service: "aso-scanner",
+    updated_at: new Date().toISOString(),
+    payment: { rails: [], note: "All tools are free; the scanner fetches the target site directly." },
+    tools: TOOL_MENU,
+    free_routes: ["list_tools", ...TOOL_MENU.map((t) => t.name)],
+    docs: { readme: "https://github.com/forgemeshlabs/aso-audit-mcp#readme", web: "https://aso.forgemesh.io" },
+})));
 const transport = new StdioServerTransport();
 await server.connect(transport);
 console.error("aso-mcp: ASO Scanner running on stdio");

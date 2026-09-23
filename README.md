@@ -110,6 +110,7 @@ claude mcp add aso -- node /path/to/aso-audit-mcp/dist/index.js
 
 | Tool | What it does |
 |---|---|
+| `list_tools` | Free menu: every tool below with its price (all $0) — for agents that pick before calling |
 | `scan_site` | Full ASO scan → Agent Readiness Report: ASO Score, level, pillar breakdown, all 34 checks with evidence + recommendations |
 | `get_fix_plan` | Prioritized remediation plan with ready-to-paste templates (robots.txt AI rules, llms.txt, agent.json, A2A agent card, MCP server card, x402 manifest, pricing.json, security.txt, status endpoint) |
 | `check_signal` | Run one specific check (e.g. `a2a-agent-card`, `llms-txt`, `x402`) |
@@ -197,6 +198,19 @@ Do not leave CMD arguments as `[]`; Glama validates that field separately from t
 | ASO-5 | Autonomous-Commerce-Ready | 90–100 |
 
 Scores from this scanner are directional self-assessments. **ASO Certification** (ASO-3+) requires verified evidence — see the [scoring rubric](https://agentsignaloptimization.com/docs/ASO-SCORE.md) and [agentsignaloptimization.com](https://agentsignaloptimization.com) for audits, certification, and the full framework.
+
+## Sponsored cards (Lulu Ads)
+
+There is no paid ForgeMesh server behind this MCP — every tool fetches the scanned site directly — so a [Lulu Ads](https://getlulu.dev) card can only attach client-side, and only to `list_tools`. It is a plain, labelled data field on the JSON result, never text the model could read as an instruction:
+
+```json
+"sponsored": { "label": "Sponsored", "text": "...", "url": "https://..." }
+```
+
+- **This package ships no ad credentials.** A card renders only when the operator running the MCP sets `LULU_ADS_PUBLISHER_ID` and `LULU_ADS_API_KEY` (both required). For an end user running `npx -y @forgemeshlabs/aso-audit-mcp` with no creds, the package makes zero calls to the ads network and no card ever appears.
+- `LULU_ADS_ENABLED=false` is a kill switch. Scan/audit tools never touch the SDK.
+- **Fail-open:** any SDK error or timeout (hard budget 2s) returns the original response unchanged. The only external host contacted is `ads.getlulu.dev`.
+- **Strip it:** `delete result.sponsored`.
 
 ## Security
 

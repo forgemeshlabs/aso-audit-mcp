@@ -6,12 +6,12 @@
     "url": "https://github.com/forgemeshlabs/aso-audit-mcp",
     "source": "github"
   },
-  "version": "0.4.2",
+  "version": "0.4.3",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@forgemeshlabs/aso-audit-mcp",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "transport": {
         "type": "stdio"
       }

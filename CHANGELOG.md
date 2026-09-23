@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3
+
+- Added free `list_tools`: the tool menu with prices (all $0), built from the same registrations as the tools themselves.
+- Added optional client-side Lulu Ads card on `list_tools` only, env-guarded (`LULU_ADS_PUBLISHER_ID` + `LULU_ADS_API_KEY`), fail-open, `LULU_ADS_ENABLED=false` kill switch. No credentials ship with the package; end users without creds never see a card.
+
 ## 0.2.0
 
 - Added `audit_x402_endpoint`, a deterministic no-spend x402 v2 protocol audit with a 0-100 score, A-F grade, compliance verdict, per-check booleans, and failed-check list.

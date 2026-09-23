@@ -7,6 +7,7 @@ import { ASO_LEVELS, SIGNALS } from "./scoring.js";
 import { buildFixPlan } from "./fixes.js";
 import { UnsafeUrlError } from "./safeurl.js";
 import { auditX402Endpoint } from "./x402-audit.js";
+import { attachSponsored } from "./ads.js";
 import type { CloudflareCategory, ScanReport } from "./types.js";
 
 const CATEGORIES = [
@@ -34,6 +35,16 @@ const server = new McpServer({
   name: "aso-scanner",
   version: "0.2.0", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
 });
+
+// Free tool menu, built from the same registrations below so names/prices
+// never drift: every tool here is free (no x402 gate — the scanner talks to
+// the scanned site directly, there is no paid ForgeMesh server behind it).
+type MenuEntry = { name: string; title: string; price_usd: number; description: string; category: string; free: boolean };
+const TOOL_MENU: MenuEntry[] = [];
+function menu<T extends { title?: string; description?: string }>(name: string, def: T): T {
+  TOOL_MENU.push({ name, title: def.title ?? name, price_usd: 0, description: String(def.description ?? "").split(/\.\s|\n/)[0], category: "aso", free: true });
+  return def;
+}
 
 function json(payload: unknown) {
   return { content: [{ type: "text" as const, text: JSON.stringify(payload, null, 2) }] };
@@ -69,7 +80,7 @@ function projectReport(report: ScanReport, includeArtifacts: boolean): ScanRepor
 
 server.registerTool(
   "audit_x402_endpoint",
-  {
+  menu("audit_x402_endpoint", {
     title: "Deterministic x402 v2 endpoint audit",
     annotations: {
       readOnlyHint: true,
@@ -86,7 +97,7 @@ server.registerTool(
       body: z.string().max(65536).optional().describe("Optional request body required to reach payment middleware on POST/PUT/PATCH endpoints"),
       content_type: z.string().max(128).optional().describe("Body content type; defaults to application/json"),
     },
-  },
+  }),
   async ({ url, method, body, content_type }) => {
     try {
       return json(await auditX402Endpoint(url, method, body, content_type));
@@ -98,7 +109,7 @@ server.registerTool(
 
 server.registerTool(
   "scan_site",
-  {
+  menu("scan_site", {
     title: "ASO Scan — measure your ASO Score",
     annotations: {
       readOnlyHint: true,
@@ -125,7 +136,7 @@ server.registerTool(
         .optional()
         .describe("Include the raw remote manifests the scanner parsed (agent.json, A2A card, etc.). These are UNTRUSTED attacker-controlled content; off by default."),
     },
-  },
+  }),
   async ({ url, categories, include_artifacts }) => {
     try {
       const report = await scan(url, categories as CloudflareCategory[] | undefined);
@@ -138,7 +149,7 @@ server.registerTool(
 
 server.registerTool(
   "check_signal",
-  {
+  menu("check_signal", {
     title: "Run a single agent-readiness check",
     annotations: {
       readOnlyHint: true,
@@ -159,7 +170,7 @@ server.registerTool(
         .regex(/^[a-z0-9-]+$/, "check_id must be a lowercase slug like 'a2a-agent-card'")
         .describe("Check id from list_checks, e.g. 'a2a-agent-card'"),
     },
-  },
+  }),
   async ({ url, check_id }) => {
     try {
       const { data, ...rest } = await scanSingle(url, check_id);
@@ -172,7 +183,7 @@ server.registerTool(
 
 server.registerTool(
   "list_checks",
-  {
+  menu("list_checks", {
     title: "List all agent-readiness checks",
     annotations: {
       readOnlyHint: true,
@@ -183,13 +194,13 @@ server.registerTool(
     description:
       "List the full catalog of checks the scanner runs: id, name, category (Cloudflare isitagentready-style), description, and spec link.",
     inputSchema: {},
-  },
+  }),
   async () => json({ totalChecks: CHECK_DEFS.length, checks: CHECK_DEFS })
 );
 
 server.registerTool(
   "get_fix_plan",
-  {
+  menu("get_fix_plan", {
     title: "Get a prioritized ASO fix plan",
     annotations: {
       readOnlyHint: true,
@@ -203,7 +214,7 @@ server.registerTool(
     inputSchema: {
       url: urlSchema.describe("Website URL or domain to plan fixes for"),
     },
-  },
+  }),
   async ({ url }) => {
     try {
       const report = await scan(url);
@@ -216,7 +227,7 @@ server.registerTool(
 
 server.registerTool(
   "get_aso_framework",
-  {
+  menu("get_aso_framework", {
     title: "ASO framework reference",
     annotations: {
       readOnlyHint: true,
@@ -229,7 +240,7 @@ server.registerTool(
       "the Agent Readiness Index maturity levels (ASO-0 through ASO-5), certification thresholds, and the scoring rubric. " +
       "Source: https://agentsignaloptimization.com",
     inputSchema: {},
-  },
+  }),
   async () =>
     json({
       framework: "Agent Signal Optimization (ASO)",
@@ -253,6 +264,36 @@ server.registerTool(
         "ASO Certified Autonomous-Commerce-Ready": "ASO-5, score 90-100, verified payment and returnability signals.",
       },
     })
+);
+
+// Free menu: the tool list with prices (all $0 — see TOOL_MENU). Registered
+// directly, not via registerTool, so it does not list itself. The Lulu card
+// attaches client-side and only when the operator running this MCP has
+// set LULU_ADS_* creds (see ads.ts) — end users without creds never see one.
+server.registerTool(
+  "list_tools",
+  {
+    title: "List Tools",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    description: "Free. Lists every ASO Scanner tool with its price (all free — no payment, no wallet), so an agent can pick before calling.",
+    inputSchema: {},
+  },
+  async () =>
+    json(
+      await attachSponsored("list_tools", {
+        service: "aso-scanner",
+        updated_at: new Date().toISOString(),
+        payment: { rails: [], note: "All tools are free; the scanner fetches the target site directly." },
+        tools: TOOL_MENU,
+        free_routes: ["list_tools", ...TOOL_MENU.map((t) => t.name)],
+        docs: { readme: "https://github.com/forgemeshlabs/aso-audit-mcp#readme", web: "https://aso.forgemesh.io" },
+      })
+    )
 );
 
 const transport = new StdioServerTransport();
