@@ -33,7 +33,7 @@ const urlSchema = z
 
 const server = new McpServer({
   name: "aso-scanner",
-  version: "0.2.0", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
+  version: "0.4.3", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
 });
 
 // Free tool menu, built from the same registrations below so names/prices
