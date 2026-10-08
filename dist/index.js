@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { readFileSync } from "node:fs";
 import { z } from "zod";
 import { scan, scanSingle, CHECK_DEFS } from "./scanner.js";
 import { ASO_LEVELS, SIGNALS } from "./scoring.js";
@@ -27,9 +28,10 @@ const urlSchema = z
     .min(1, "URL is required")
     .max(2048, "URL is too long")
     .describe("Website URL or domain to scan, e.g. https://example.com or example.com");
+const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const server = new McpServer({
     name: "aso-scanner",
-    version: "0.4.4", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
+    version,
 });
 const TOOL_MENU = [];
 function menu(name, def) {

@@ -64,7 +64,7 @@ Every check returns **pass / partial / fail** with concrete evidence and a fix r
 
 ## Install
 
-Requires Node.js ≥ 18. Published on npm as [`@forgemeshlabs/aso-audit-mcp`](https://www.npmjs.com/package/@forgemeshlabs/aso-audit-mcp) — no clone or build needed.
+Requires Node.js ≥ 20. Published on npm as [`@forgemeshlabs/aso-audit-mcp`](https://www.npmjs.com/package/@forgemeshlabs/aso-audit-mcp) — no clone or build needed.
 
 ```bash
 npm install -g @forgemeshlabs/aso-audit-mcp
@@ -130,7 +130,7 @@ npm run smoke -- https://your-site.com
 This repository includes `glama.json` for Glama MCP registry ownership and install metadata.
 
 - **Package:** `@forgemeshlabs/aso-audit-mcp`
-- **Current release:** `v0.2.0`
+- **Current release:** `v0.4.4`
 - **Transport:** local `stdio`
 - **Authentication:** none required for local `stdio` use. The scanner does not ask for API keys, tokens, cookies, or third-party credentials.
 - **HTTP deployment:** not enabled by this npm package. Any public HTTP deployment of this scanner must add authentication, per-client rate limits, request logging, and an egress policy before exposure.
@@ -152,11 +152,11 @@ List the ASO scanner checks.
 
 Release verification:
 
-- Git tag: `v0.2.0`
+- Git tag: `v0.4.4`
 - npm package: `@forgemeshlabs/aso-audit-mcp`
-- MCP server version: `0.2.0`
+- MCP server version: `0.4.4` (read from `package.json` at startup)
 
-`v0.2.0` adds the deterministic no-spend x402 v2 endpoint compliance audit while preserving the broader ASO Agent Readiness score as a separate metric.
+Since `v0.2.0` the server includes the deterministic no-spend x402 v2 endpoint compliance audit while preserving the broader ASO Agent Readiness score as a separate metric.
 
 ### Glama release build
 
@@ -209,7 +209,7 @@ There is no paid ForgeMesh server behind this MCP — every tool fetches the sca
 
 - **This package ships no ad credentials.** A card renders only when the operator running the MCP sets `LULU_ADS_PUBLISHER_ID` and `LULU_ADS_API_KEY` (both required). For an end user running `npx -y @forgemeshlabs/aso-audit-mcp` with no creds, the package makes zero calls to the ads network and no card ever appears.
 - `LULU_ADS_ENABLED=false` is a kill switch. Scan/audit tools never touch the SDK.
-- **Fail-open:** any SDK error or timeout (hard budget 2s) returns the original response unchanged. The only external host contacted is `ads.getlulu.dev`.
+- **Fail-open:** any SDK error or timeout (hard budget 2s) returns the original response unchanged. The only external host contacted by this package, other than the sites you ask it to scan, is `ads.getlulu.dev`. Scanned-site requests all go through the SSRF-guarded client (private-IP refusal, pinned DNS, 10 s timeout, 512 KB response cap, revalidated redirects).
 - **Strip it:** `delete result.sponsored`.
 
 ## Security

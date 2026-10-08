@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { auditX402Endpoint } from "./x402-audit.js";
+import { allowLoopbackForTests } from "./safeurl.js";
 
-process.env.ASO_SCANNER_TEST_ALLOW_LOOPBACK = "1";
+allowLoopbackForTests(true);
 
 function fixture(challenge: unknown): Promise<{ server: Server; url: string }> {
   const encoded = Buffer.from(JSON.stringify(challenge)).toString("base64");
