@@ -29,7 +29,7 @@ const urlSchema = z
     .describe("Website URL or domain to scan, e.g. https://example.com or example.com");
 const server = new McpServer({
     name: "aso-scanner",
-    version: "0.4.3", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
+    version: "0.4.4", // keep in sync with package.json, glama.json, and well-known/mcp/server-card.json
 });
 const TOOL_MENU = [];
 function menu(name, def) {
