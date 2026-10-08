@@ -154,7 +154,7 @@ Release verification:
 
 - Git tag: `v0.4.4`
 - npm package: `@forgemeshlabs/aso-audit-mcp`
-- MCP server version: `0.4.4` (read from `package.json` at startup)
+- MCP server version: `0.4.5` (read from `package.json` at startup)
 
 Since `v0.2.0` the server includes the deterministic no-spend x402 v2 endpoint compliance audit while preserving the broader ASO Agent Readiness score as a separate metric.
 
