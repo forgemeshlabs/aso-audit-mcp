@@ -1,9 +1,11 @@
 {
   "$schema": "https://glama.ai/mcp/schemas/server.json",
-  "maintainers": ["clawdbotworker"],
+  "maintainers": [
+    "clawdbotworker"
+  ],
   "name": "@forgemeshlabs/aso-audit-mcp",
   "description": "Free Agent Signal Optimization scanner MCP server. Audits websites for agent discoverability, trust, interoperability, commerce, Google generative AI search, browser-agent UX, and machine-readable readiness signals.",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "license": "MIT",
   "repository": "https://github.com/forgemeshlabs/aso-audit-mcp",
   "homepage": "https://github.com/forgemeshlabs/aso-audit-mcp#readme",
@@ -14,7 +16,10 @@
   "installation": {
     "npm": {
       "command": "npx",
-      "args": ["-y", "@forgemeshlabs/aso-audit-mcp"]
+      "args": [
+        "-y",
+        "@forgemeshlabs/aso-audit-mcp"
+      ]
     }
   },
   "tools": [

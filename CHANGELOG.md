@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.6
+
+- Dependencies: zod 3 â 4.6.7 (GHSA-mrhx-c7xc-m3w5); lockfile refresh resolving the open npm advisories (zod via @x402/core, body-parser, fast-uri, qs, ip-address, @hono/node-server as applicable). No behavior change.
+
 ## 0.4.3
 
 - Added free `list_tools`: the tool menu with prices (all $0), built from the same registrations as the tools themselves.
